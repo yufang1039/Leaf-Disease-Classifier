@@ -28,7 +28,7 @@ train_ds, valid_ds = torch.utils.data.random_split(dataset=leaf_ds,
 train_loader = DataLoader(train_ds, shuffle=True, batch_size = BATCH_SIZE)
 valid_loader = DataLoader(valid_ds, shuffle=True, batch_size = BATCH_SIZE)
 
-TRAIN_SIZE = ds_len
+TRAIN_SIZE = math.floor(ds_len * 0.7)
 VALID_SIZE = ds_len - math.floor(ds_len * 0.7)
 loss_fn = torch.nn.CrossEntropyLoss()
 
