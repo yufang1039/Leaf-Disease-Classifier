@@ -1,4 +1,5 @@
 import math
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -17,12 +18,12 @@ from sklearn.metrics import accuracy_score
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 NUM_OF_EPOCH = 20
 LEARNING_RATE = 8e-4
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 
 
 # Get leaf dataset and dataloader for both training and validation dataset
 leaf_ds = LeafDataset(csv_file="train_df.csv", imgs_path="train_images/", 
-                transform=torchvision.transforms.CenterCrop([1700, 1700]))
+                transform=torchvision.transforms.CenterCrop([500, 500]))
 ds_len = leaf_ds.__len__()
 train_ds, valid_ds = torch.utils.data.random_split(dataset=leaf_ds, 
                     lengths=[math.floor(ds_len * 0.7), ds_len - math.floor(ds_len * 0.7)])
@@ -35,42 +36,33 @@ loss_fn = torch.nn.BCEWithLogitsLoss()
 
 ## Train funciton that train the model for one epoche
 def train_fn(net, loader):
-    
-    running_loss = 0
-    preds_for_acc = []
-    labels_for_acc = []
+
+    tr_loss = 0
     
     for _, (images, labels) in enumerate(loader):
         
         images, labels = images.to(device), labels.to(device)
-
-        ## Set mode to training
-        net.train()
 
         ## Set gradient to zero
         optimizer.zero_grad()
 
         ## Forward
         predictions = net(images)
-        loss = loss_fn(predictions, labels)
+        loss = loss_fn(predictions, labels.squeeze(-1))
 
         ## Backward
         loss.backward()
+        tr_loss += loss.item()
         optimizer.step()
-        
-        running_loss += loss.item()*labels.shape[0]
-        labels_for_acc = np.concatenate((labels_for_acc, labels.cpu().numpy()), 0)
-        preds_for_acc = np.concatenate((preds_for_acc, np.argmax(predictions.cpu().detach().numpy(), 1)), 0)
 
-    accuracy = accuracy_score(labels_for_acc, preds_for_acc)
-    return running_loss/TRAIN_SIZE, accuracy
+        print("One image finished, running loss is" + str(tr_loss/TRAIN_SIZE))
+
+
+    return tr_loss/TRAIN_SIZE
 
 def valid_fn(net, loader):
     
-    running_loss = 0
-    preds_for_acc = []
-    labels_for_acc = []
-    
+    valid_loss = 0
     
     with torch.no_grad():       
         for _, (images, labels) in enumerate(loader):
@@ -78,15 +70,12 @@ def valid_fn(net, loader):
             images, labels = images.to(device), labels.to(device)
             net.eval()
             predictions = net(images)
-            loss = loss_fn(predictions, labels)
+            loss = loss_fn(predictions, labels.squeeze(-1))
             
-            running_loss += loss.item()*labels.shape[0]
-            labels_for_acc = np.concatenate((labels_for_acc, labels.cpu().numpy()), 0)
-            preds_for_acc = np.concatenate((preds_for_acc, np.argmax(predictions.cpu().detach().numpy(), 1)), 0)
+            valid_loss += loss.item()
             
-        accuracy = accuracy_score(labels_for_acc, preds_for_acc)
 
-    return running_loss/VALID_SIZE, accuracy
+    return valid_loss/VALID_SIZE
 
 
 # Start training
@@ -102,17 +91,19 @@ val_acc = []
 
 if __name__ == "__main__":   
     for epoch in range(NUM_OF_EPOCH):
-        tl, ta = train_fn(leaf_model, loader = train_loader)
-        vl, va = valid_fn(leeaf_model, loader = valid_loader)
+
+        os.system(f'echo \"  Epoch {epoch}\"')
+         
+        ## Set mode to training
+        leaf_model.train()
+        
+        tl = train_fn(leaf_model, loader = train_loader)
+        vl = valid_fn(leeaf_model, loader = valid_loader)
         train_loss.append(tl)
         valid_loss.append(vl)
-        train_acc.append(ta)
-        val_acc.append(va)
         
-        if (epoch+1)%10==0:
-            path = 'epoch' + str(epoch) + '.pt'
-            torch.save(leaf_model.state_dict(), path)
+
         
         print('Epoch: '+ str(epoch) + ', Train loss: ' + str(tl) 
-            + ', Val loss: ' + str(vl) + ', Train acc: ' + str(ta) + ', Val acc: ' + str(va))
+            + ', Val loss: ' + str(vl))
 
