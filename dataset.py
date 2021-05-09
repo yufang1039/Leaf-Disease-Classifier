@@ -20,8 +20,8 @@ class LeafDataset(Dataset):
     def __getitem__(self, index): 
         row = self.df.iloc[index]
         image_path = self.imgs_path + row[0]
-        image = torchvision.io.read_image(image_path) 
-        target = torch.tensor(row[-6:], dtype=torch.float32)
+        image = torchvision.io.read_image(image_path).float()
+        target = torch.tensor(row[-6:], dtype=torch.float)
         if self.transform:
             return self.transform(image), target
         return image, target

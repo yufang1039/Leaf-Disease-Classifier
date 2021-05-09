@@ -21,7 +21,8 @@ BATCH_SIZE = 8
 
 
 # Get leaf dataset and dataloader for both training and validation dataset
-leaf_ds = LeafDataset(csv_file="train_df.csv", imgs_path="train_images/")
+leaf_ds = LeafDataset(csv_file="train_df.csv", imgs_path="train_images/", 
+                transform=torchvision.transforms.CenterCrop([1700, 1700]))
 ds_len = leaf_ds.__len__()
 train_ds, valid_ds = torch.utils.data.random_split(dataset=leaf_ds, 
                     lengths=[math.floor(ds_len * 0.7), ds_len - math.floor(ds_len * 0.7)])
@@ -30,7 +31,7 @@ valid_loader = DataLoader(valid_ds, shuffle=True, batch_size = BATCH_SIZE)
 
 TRAIN_SIZE = math.floor(ds_len * 0.7)
 VALID_SIZE = ds_len - math.floor(ds_len * 0.7)
-loss_fn = torch.nn.CrossEntropyLoss()
+loss_fn = torch.nn.BCEWithLogitsLoss()
 
 ## Train funciton that train the model for one epoche
 def train_fn(net, loader):
