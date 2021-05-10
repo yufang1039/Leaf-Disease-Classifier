@@ -121,8 +121,8 @@ if __name__ == "__main__":
 
     # Plots Loss
     epochs = range(1, len(train_loss) + 1)
-    plt.plot(epochs, train_loss, 'y', label = 'Training loss')
-    plt.plot(epochs, valid_loss, 'r', label = 'Validation loss')
+    plt.plot(epochs, train_loss, 'y', label='Training loss')
+    plt.plot(epochs, valid_loss, 'r', label='Validation loss')
     plt.title('Training and validation loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
