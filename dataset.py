@@ -22,6 +22,8 @@ class LeafDataset(Dataset):
         image_path = self.imgs_path + row[0]
         image = torchvision.io.read_image(image_path).float()
         target = torch.tensor(row[-6:], dtype=torch.float)
+        # Image Normalization
+        image = image/255
         if self.transform:
             return self.transform(image), target
         return image, target

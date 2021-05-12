@@ -18,12 +18,12 @@ from sklearn.metrics import accuracy_score
 
 # Define constant param
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_OF_EPOCH = 100
+NUM_OF_EPOCH = 5
 LEARNING_RATE = 8e-4
 BATCH_SIZE = 8
 
 # File directories
-label_dir = "train_df_small.csv"
+label_dir = "train_df.csv"
 image_dir = "train_images/"
 save_dir = "train_results/"
 
@@ -51,7 +51,6 @@ def train_fn(net, loader):
     tr_accuracy = 0
 
     for _, (images, labels) in enumerate(loader):
-        
         images, labels = images.to(device), labels.to(device)
 
         ## Set gradient to zero
