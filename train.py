@@ -18,14 +18,14 @@ from sklearn.metrics import accuracy_score
 
 # Define constant param
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_OF_EPOCH = 5
+NUM_OF_EPOCH = 100
 LEARNING_RATE = 8e-4
-BATCH_SIZE = 4
+BATCH_SIZE = 8
 
 # File directories
 label_dir = "train_df_small.csv"
 image_dir = "train_images/"
-save_dir = "results/"
+save_dir = "train_results/"
 
 # Get leaf dataset and dataloader for both training and validation dataset
 leaf_ds = LeafDataset(csv_file=label_dir, imgs_path=image_dir,
@@ -144,8 +144,11 @@ if __name__ == "__main__":
         print('Epoch: '+ str(epoch) + ', Train loss: ' + str(tl) + ', Train accuracy: ' + str(ta)
             + ', Val loss: ' + str(vl) + ', Val accuracy: ' + str(va))
 
+        if epoch % 20 == 0:
+            torch.save(leaf_model.state_dict(), save_dir + str(epoch) + ".pt")
+
     # Saves model weights, need to specify file name
-    torch.save(leaf_model.state_dict(), save_dir + "weights.pt")
+    torch.save(leaf_model.state_dict(), save_dir + "final.pt")
 
     # Plots Loss
     epochs = range(1, len(train_loss) + 1)
