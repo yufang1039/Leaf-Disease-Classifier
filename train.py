@@ -10,7 +10,7 @@ import torch.optim as optim
 from torchvision import models as models
 from torch.utils.data import DataLoader
 
-from model import model_resnet
+from model import model_resnet, model_eff
 from dataset import LeafDataset
 from sklearn.metrics import accuracy_score
 
@@ -29,7 +29,10 @@ save_dir = "train_results/"
 
 # Get leaf dataset and dataloader for both training and validation dataset
 leaf_ds = LeafDataset(csv_file=label_dir, imgs_path=image_dir,
-                transform=torchvision.transforms.Resize([500, 500]))
+                transform=torchvision.transforms.Compose([
+                    torchvision.transforms.Resize([312, 1000]),
+                    torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225],),
+                    ]))
 ds_len = leaf_ds.__len__()
 
 TRAIN_SIZE = math.floor(ds_len * 0.7)
@@ -41,7 +44,7 @@ train_ds, valid_ds = torch.utils.data.random_split(dataset=leaf_ds,
 train_loader = DataLoader(train_ds, shuffle=True, batch_size=BATCH_SIZE)
 valid_loader = DataLoader(valid_ds, shuffle=True, batch_size=BATCH_SIZE)
 
-loss_fn = torch.nn.BCEWithLogitsLoss()
+loss_fn = torch.nn.BCELoss()
 
 print_running_loss = False
 ## Train funciton that train the model for one epoch
@@ -112,7 +115,7 @@ def valid_fn(net, loader):
 
 
 # Start training
-leaf_model = model_resnet()
+leaf_model = model_eff()
 leaf_model.to(device)
 optimizer = optim.Adam(leaf_model.parameters(), lr=LEARNING_RATE)
 

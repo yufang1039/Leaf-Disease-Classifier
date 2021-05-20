@@ -1,6 +1,4 @@
 import pandas as pd
-import os
-import torch
 
 # read official csv file
 train_origin = pd.read_csv('train.csv')
