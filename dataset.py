@@ -1,10 +1,8 @@
 import torch
 import torchvision
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
+from torch.utils.data import Dataset
 import pandas as pd
-import math
-import re
+import os
 
 class LeafDataset(Dataset):
     
@@ -22,9 +20,26 @@ class LeafDataset(Dataset):
         image_path = self.imgs_path + row[0]
         image = torchvision.io.read_image(image_path).float()
         target = torch.tensor(row[-6:], dtype=torch.float)
-        # Image Normalization
-        image = image/255
         if self.transform:
             return self.transform(image), target
         return image, target
 
+
+
+class TestDataSet(Dataset):
+
+    def __init__(self, main_dir, transform=None):
+        self.main_dir = main_dir
+        self.transform = transform
+        self.total_imgs = os.listdir("test_images/")
+
+    def __len__(self):
+        return len(self.total_imgs)
+
+    def __getitem__(self, idx):
+        name = self.total_imgs[idx]
+        img_loc = os.path.join(self.main_dir, self.total_imgs[idx])
+        image = torchvision.io.read_image(img_loc).float()
+        if self.transform:
+            return self.transform(image), name
+        return image, name

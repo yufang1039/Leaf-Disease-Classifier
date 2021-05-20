@@ -6,7 +6,7 @@ import torchvision
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from model import model_resnet
+from model import model_resnet, model_eff
 from dataset import LeafDataset
 
 
@@ -25,7 +25,10 @@ weights_dir = "train_results/exp2/final.pt"
 
 # Get leaf dataset and dataloader for both training and validation dataset
 leaf_ds = LeafDataset(csv_file=label_dir, imgs_path=image_dir,
-                transform=torchvision.transforms.Resize([500, 500]))
+                transform=torchvision.transforms.Compose([
+                    torchvision.transforms.Resize([312, 1000]),
+                    torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225],),
+                    ]))
 ds_len = leaf_ds.__len__()
 
 TRAIN_SIZE = math.floor(ds_len * 0.7)
@@ -108,7 +111,7 @@ def valid_fn(net, loader):
 
 
 # Start training
-leaf_model = model_resnet()
+leaf_model = model_eff()
 leaf_model.to(device)
 if weights_dir:
     leaf_model.load_state_dict(torch.load(weights_dir, map_location=device))
