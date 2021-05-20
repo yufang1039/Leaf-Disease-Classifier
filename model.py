@@ -16,7 +16,6 @@ def model_eff():
     layers = nn.Sequential(
         nn.Dropout(p=0.2),
         nn.Linear(1000, 6),
-        nn.Softmax(dim=1)
     )
     return nn.Sequential(model, layers)
 
