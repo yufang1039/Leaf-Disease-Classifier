@@ -1,24 +1,19 @@
 import math
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import torchvision
 import torch.optim as optim
-from torchvision import models as models
 from torch.utils.data import DataLoader
 
 from model import model_resnet
 from dataset import LeafDataset
-from sklearn.metrics import accuracy_score
 
 
 
 # Define constant param
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_OF_EPOCH = 5
+NUM_OF_EPOCH = 10
 LEARNING_RATE = 8e-4
 BATCH_SIZE = 8
 
@@ -26,6 +21,7 @@ BATCH_SIZE = 8
 label_dir = "train_df.csv"
 image_dir = "train_images/"
 save_dir = "train_results/"
+weights_dir = "train_results/exp2/final.pt"
 
 # Get leaf dataset and dataloader for both training and validation dataset
 leaf_ds = LeafDataset(csv_file=label_dir, imgs_path=image_dir,
@@ -114,6 +110,9 @@ def valid_fn(net, loader):
 # Start training
 leaf_model = model_resnet()
 leaf_model.to(device)
+if weights_dir:
+    leaf_model.load_state_dict(torch.load(weights_dir, map_location=device))
+
 optimizer = optim.Adam(leaf_model.parameters(), lr=LEARNING_RATE)
 
 # Array to store loss and accuracy values
@@ -143,7 +142,7 @@ if __name__ == "__main__":
         print('Epoch: '+ str(epoch) + ', Train loss: ' + str(tl) + ', Train accuracy: ' + str(ta)
             + ', Val loss: ' + str(vl) + ', Val accuracy: ' + str(va))
 
-        if epoch % 20 == 0:
+        if epoch % 2 == 0:
             torch.save(leaf_model.state_dict(), save_dir + str(epoch) + ".pt")
 
     # Saves model weights, need to specify file name

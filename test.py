@@ -8,14 +8,14 @@ from dataset import LeafDataset
 
 # Define constant param
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_OF_EPOCH = 2
+NUM_OF_EPOCH = 5
 BATCH_SIZE = 8
 
 # File directories
 label_dir = "train_df_small.csv"
 image_dir = "train_images/"
 save_dir = "test_results/"
-weights_path = "train_results/final.pt"
+weights_path = "train_results/exp3/final.pt"
 
 
 # Get leaf dataset and dataloader for both training and validation dataset
