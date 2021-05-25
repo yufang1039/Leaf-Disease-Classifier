@@ -73,16 +73,7 @@ def train_fn(net, loader):
 
         ## Accuracy
 
-        # batch_shape = list(predictions.size())
-        # for i in range(batch_shape[0]):
-        #     for j in range(batch_shape[1]):
-        #         prediction = 1 if predictions.detach().cpu().numpy()[i][j] >= 0.5 else 0
-        #         if prediction == labels.detach().cpu().numpy()[i][j]:
-        #             tr_accuracy += 1.0/batch_shape[1]
-
-        # print(tr_accuracy)
-
-        positives = torch.zeros(predictions.size())
+        positives = torch.zeros(predictions.size()).to(device)
         positives[torch.nonzero(predictions > 0.5, as_tuple=True)] = 1
         tr_accuracy += torch.count_nonzero((positives - labels) == 0) / predictions.size()[1]
 
@@ -95,7 +86,7 @@ def train_fn(net, loader):
 
         if print_stats:
             print("Current batch: " + str(batch_number+1) + "/" + str(int(TRAIN_SIZE/BATCH_SIZE)) \
-                 + " , running loss is " + str(tr_loss/((batch_number+1) * BATCH_SIZE)) \
+                + " , running loss is " + str(tr_loss/((batch_number+1) * BATCH_SIZE)) \
                 + " , elapsed_time = " + "{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds) \
                 + " , epoch = " + str(epoch))
 
@@ -116,7 +107,7 @@ def valid_fn(net, loader):
             
             valid_loss += loss.item()
 
-            positives = torch.zeros(predictions.size())
+            positives = torch.zeros(predictions.size()).to(device)
             positives[torch.nonzero(predictions > 0.5, as_tuple=True)] = 1
             valid_accuracy += torch.count_nonzero((positives - labels) == 0) / predictions.size()[1]
             
@@ -127,9 +118,12 @@ def valid_fn(net, loader):
 
 
 # Start training
-leaf_model = model_resnet()
+leaf_model =  model_resnet()
 leaf_model.to(device)
+#leaf_model.load_state_dict(torch.load("train_results/exp3/4.pt"))
+prev_checkpoint = 0
 optimizer = optim.Adam(leaf_model.parameters(), lr=LEARNING_RATE)
+
 
 # Array to store loss and accuracy values
 train_loss = []
@@ -144,15 +138,15 @@ if __name__ == "__main__":
     global start
     global epoch
 
+    start = time.time()
+
     # Training Loop
-    for epoch in range(NUM_OF_EPOCH):
+    for epoch in range(prev_checkpoint, NUM_OF_EPOCH):
 
         os.system(f'echo \"  Epoch {epoch}\"')
         
         ## Set mode to training
         leaf_model.train()
-
-        start = time.time()
 
         ta, tl = train_fn(leaf_model, loader=train_loader)
         #va, vl = valid_fn(leaf_model, loader=valid_loader)
@@ -164,7 +158,7 @@ if __name__ == "__main__":
         print('Epoch: '+ str(epoch) + ', Train loss: ' + str(tl) + ', Train accuracy: ' + str(ta) )
             # + ', Val loss: ' + str(vl) + ', Val accuracy: ' + str(va))
 
-        if epoch % 20 == 0:
+        if epoch % 2 == 0:
             torch.save(leaf_model.state_dict(), save_dir + str(epoch) + ".pt")
 
     # Saves model weights, need to specify file name
